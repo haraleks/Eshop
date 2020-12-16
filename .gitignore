@@ -5,3 +5,4 @@ src/db.sqlite3
 src/templates
 src/staticfiles
 src/media
+*/__pycache__/
