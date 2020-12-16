@@ -9,23 +9,23 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '9x)z%oo%w0t5h_k2)4b+e4jz(j&xa!z9jw*mi&6-1g$ub$st5s'
+SECRET_KEY = os.environ.get('SECRET_KEY', '9x)z%oo%w0t5h_k2)4b+e4jz(j&xa!z9jw*mi&6-1g$ub$st5s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', '')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -37,7 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shop.apps.ShopConfig'
+    'rest_framework',
+    'django_filters',
+    'users.apps.UsersConfig',
+    'shop.apps.ShopConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -55,7 +59,7 @@ ROOT_URLCONF = 'Eshop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
+        'DIRS': [os.path.join(BASE_DIR, 'templates')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -77,8 +81,12 @@ WSGI_APPLICATION = 'Eshop.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.environ.get('SQL_ENGINE', "django.db.backends.postgresql"),
+        "NAME": os.environ.get("SQL_DATABASE", "e_shop"),
+        "USER": os.environ.get("SQL_USER", "eshop_user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "12312300"),
+        "HOST": os.environ.get("SQL_HOST", "db"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
 
@@ -101,6 +109,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+
+AUTH_USER_MODEL = 'users.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -120,3 +131,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+STATIC_ROOT = '/home/web/staticfiles/'
+MEDIA_ROOT = '/home/web/media/'
+
+STATICFILES_DIRS = []
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}

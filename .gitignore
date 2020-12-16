@@ -1,5 +1,7 @@
 # Project exclude paths
 /venv/
 .idea
-db.sqlite3
-templates
+src/db.sqlite3
+src/templates
+src/staticfiles
+src/media
