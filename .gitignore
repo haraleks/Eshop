@@ -6,3 +6,4 @@ src/templates
 src/staticfiles
 src/media
 */__pycache__/
+*.log
