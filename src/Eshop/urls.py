@@ -50,7 +50,7 @@ urlpatterns = [
 
 
     # path('api/v1/', include('shop.urls')),
-    # path('api/v1/account/', include('users.urls')),
+    path('api/v1/account/', include('users.urls')),
 
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0),
             name='schema-swagger-ui'),

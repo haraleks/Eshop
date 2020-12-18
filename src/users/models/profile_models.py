@@ -41,3 +41,7 @@ class Customer(models.Model):
 
     def __str__(self):
         return str(self.full_name)
+
+    def delete(self, *args, **kwargs):
+        self.is_active = False
+        self.save()

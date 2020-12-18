@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from users.models.profile_models import Customer
 from users.utils import vaildation_password
 
 User = get_user_model()
@@ -27,3 +28,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": ["Password doesn't match"]})
         return super().validate(attrs)
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Customer
+        fields = '__all__'
+
+
+class UpdateCustomerSerializer(CustomerSerializer):
+
+    first_name = serializers.CharField(required=False)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
