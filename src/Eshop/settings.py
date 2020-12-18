@@ -119,8 +119,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
-
 AUTH_USER_MODEL = 'users.User'
 
 # Internationalization
@@ -161,25 +159,26 @@ REST_FRAMEWORK = {
     ),
 }
 
+EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", True)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "haraleks.wis@gmail.com")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "Wis-2020")
+EMAIL_PORT = 587
+
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
     'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': False,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
+    'SEND_ACTIVATION_EMAIL': True,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserRegistrationSerializer',
     },
 }
 
-# SOCIAL_AUTH_POSTGRES_JSONFIELD = True
-
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
-    # django-rest-framework-social-oauth2
     'rest_framework_social_oauth2.backends.DjangoOAuth2',
-
-    # Django
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -191,11 +190,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 
-# LOGIN_URL = '/auth/login/google-oauth2/'
-#
-# LOGIN_REDIRECT_URL = '/'
-# LOGOUT_REDIRECT_URL = '/'
-# SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
@@ -233,3 +227,6 @@ LOGGING = {
         },
     },
 }
+
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
