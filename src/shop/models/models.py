@@ -65,6 +65,11 @@ class Product(AbstarctModels):
 class Attribute(AbstarctModels):
     type = models.CharField(choices=TypeValue.CHOISES(), max_length=8,
                             default=TypeValue.CHAR)
+    product = models.ForeignKey(
+        Product, blank=True,
+        on_delete=models.CASCADE,
+        default=None,
+        related_name='attribute')
 
     class Meta:
         verbose_name = _('Attribute')
@@ -76,12 +81,7 @@ class Attribute(AbstarctModels):
 
 
 class Value(models.Model):
-    product = models.ForeignKey(
-        Product, blank=True,
-        on_delete=models.CASCADE,
-        default=None,
-        related_name='value')
-    attribute = models.ForeignKey(
+    attribute = models.OneToOneField(
         Attribute, blank=True,
         on_delete=models.CASCADE,
         default=None,
