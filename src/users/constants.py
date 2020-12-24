@@ -48,3 +48,17 @@ class Status(Enum):
             (cls.PAID.value, _('Paid')),
             (cls.CANCELED.value, _('Canceled')),
         )
+
+
+class SexProduct(Enum):
+    MALE = 'M'
+    FEMALE = 'F'
+    UNISEX = 'U'
+
+    @classmethod
+    def CHOISES(cls):
+        return (
+            (cls.MALE.value, _('Male')),
+            (cls.FEMALE.value, _('Female')),
+            (cls.UNISEX.value, _('Unisex')),
+        )
