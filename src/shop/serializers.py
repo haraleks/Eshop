@@ -63,9 +63,11 @@ class ProductDetailSerializer(ProductSerializer):
                   'category', 'subcategory', 'characteristic', 'feedback', 'same_product']
 
     def get_same_product(self, instance):
-        product_random = Product.objects.random(sex=instance.sex,
+        customer = self.context['request'].user.client_profile
+        product_random = Product.objects.random(sex=customer.sex,
                                                 subcategory=instance.subcategory,
-                                                exclud_id=instance.pk)
+                                                exclud_id=instance.pk,
+                                                age=customer.age)
         serializers = ProductSerializer(product_random[:5], many=True)
         return serializers.data
 

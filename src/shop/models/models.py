@@ -2,7 +2,7 @@ import random
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Q
 from django.utils.translation import ugettext_lazy as _
 
 from shop.utils import discount_birthday
@@ -11,8 +11,9 @@ from users.models.profile_models import Customer
 
 
 class UserManager(models.Manager):
-    def random(self, sex=None, subcategory=None, exclude_id=None):
-        instance = list(self.filter(sex=sex, subcategory=subcategory).exclude(pk=exclude_id))
+    def random(self, sex=None, subcategory=None, exclude_id=None, age=None):
+        instance = list(self.filter(Q(age_to__gte=age) & Q(age_from__lte=age),
+                                    sex=sex, subcategory=subcategory).exclude(pk=exclude_id))
         random.shuffle(instance)
         return instance
 
@@ -35,6 +36,15 @@ class Category(AbstractModels):
         verbose_name_plural = _('Categories')
         permissions = []
 
+    @property
+    def count_subcategory(self):
+        return self.subcategory.all().count()
+
+    @property
+    def count_product(self):
+        all_subcategory = self.subcategory.all()
+        return Product.objects.filter(subcategory__in=all_subcategory).count()
+
 
 class Subcategory(AbstractModels):
     category = models.ForeignKey(
@@ -47,6 +57,10 @@ class Subcategory(AbstractModels):
         verbose_name = _('Subcategory')
         verbose_name_plural = _('Subcategories')
         permissions = []
+
+    @property
+    def count_prodact(self):
+        return self.product.all().count()
 
     def __str__(self):
         return f'{self.category.name} - {self.name}'
@@ -63,7 +77,7 @@ class Product(AbstractModels):
     description = models.TextField(_('Description product'), blank=True)
     subcategory = models.ForeignKey(
         Subcategory, blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         null=True,
         related_name='product')
     sex = models.CharField(
@@ -72,7 +86,14 @@ class Product(AbstractModels):
         max_length=1,
         default=SexProduct.UNISEX.value,
         blank=True)
+    age_from = models.IntegerField(_('Age min'), blank=True, null=True)
+    age_to = models.IntegerField(_('Age max'), blank=True, null=True)
     is_active = models.BooleanField(_("Is active"), default=True)
+    main_character = models.ForeignKey(
+        'Attribute', blank=True,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='main_character_product')
 
     class Meta:
         verbose_name = _('Product')
@@ -240,7 +261,7 @@ class PositionProduct(models.Model):
     # TODO  валидацию по остаткам
     product_items = models.ForeignKey(
         ProductItems, blank=True,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         null=True,
         related_name='position_product')
     quantity = models.IntegerField(_('Quantity of products'), validators=[MinValueValidator(0)], default=0)

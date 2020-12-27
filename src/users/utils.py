@@ -1,9 +1,10 @@
 import re
-from datetime import datetime
+
+from django.utils import timezone
 
 
 def calculate_age(born):
-    today = datetime.today()
+    today = timezone.now()
     try:
         birthday = born.replace(year=today.year)
     except ValueError:
@@ -27,3 +28,16 @@ def vaildation_password(data):
     if not re.search(r'[&$#]', data):
         errors_dct['symbols:'] = ['not symbol: (&,$,#)']
     return errors_dct
+
+
+def count_age_customer(birthday):
+    now = timezone.now()
+    if birthday.month == now.month:
+        if birthday.day <= now.day:
+            return now.year - birthday.year
+        else:
+            return now.year - birthday.year - 1
+    elif birthday.month > now.month:
+        return now.year - birthday.year - 1
+    else:
+        return now.year - birthday.year

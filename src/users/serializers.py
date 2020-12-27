@@ -41,3 +41,24 @@ class UpdateCustomerSerializer(CustomerSerializer):
 
     first_name = serializers.CharField(required=False)
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
+
+
+class ChangePasswordUserSerializer(serializers.Serializer):
+    new_password = serializers.CharField()
+
+    def validate_new_password(self, data):
+        user = self.context['request'].user
+        if user.check_password(data):
+            raise serializers.ValidationError("You entered your old password")
+        errors_dct = vaildation_password(data)
+        if errors_dct:
+            raise serializers.ValidationError(errors_dct)
+        return data
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        user.set_password(validated_data['new_password'])
+        user.save()
+        res = {'status': 'success',
+               'message': 'Password updated successfully'}
+        return res

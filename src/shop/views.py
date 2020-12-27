@@ -15,7 +15,6 @@ class ProductViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Product.objects.all()
     filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
-    # filter_class = TeacherTestPollFiltersLessons
     filterset_fields = ['price', 'subcategory', 'subcategory__category']
     search_fields = ['name', 'sku', 'id']
     ordering_fields = ['name', 'price', 'id']
@@ -25,11 +24,20 @@ class ProductViewSet(ModelViewSet):
         serializer = ProductDetailSerializer(instance)
         return Response(serializer.data)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
 
 class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Category.objects.all()
+    filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filterset_fields = ['name']
+    search_fields = ['name']
+    ordering_fields = ['name']
 
 
 class ProductsCompareViewSet(ModelViewSet):
@@ -125,8 +133,6 @@ class SendPayBasket(ModelViewSet):
         self.perform_update(serializer)
 
         if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
