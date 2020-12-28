@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', '9x)z%oo%w0t5h_k2)4b+e4jz(j&xa!z9jw*mi&6-1g$ub$st5s')
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', '')
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'users.apps.UsersConfig',
     'shop.apps.ShopConfig',
+    'djcelery_email',
 
 ]
 
@@ -232,3 +233,7 @@ LOGGING = {
 
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'

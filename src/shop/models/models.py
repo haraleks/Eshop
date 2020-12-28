@@ -12,8 +12,9 @@ from users.models.profile_models import Customer
 
 class UserManager(models.Manager):
     def random(self, sex=None, subcategory=None, exclude_id=None, age=None):
-        instance = list(self.filter(Q(age_to__gte=age) & Q(age_from__lte=age),
-                                    sex=sex, subcategory=subcategory).exclude(pk=exclude_id))
+        instance = list(self.filter(
+            Q(age_to__gte=age) & Q(age_from__lte=age),
+            sex=sex, subcategory=subcategory).exclude(pk=exclude_id))
         random.shuffle(instance)
         return instance
 
@@ -67,9 +68,7 @@ class Subcategory(AbstractModels):
 
 
 class Product(AbstractModels):
-    """
-    Price -  в копейках
-    """
+
     objects = UserManager()
 
     price = models.IntegerField(_('Price'), validators=[MinValueValidator(0)], default=0)
@@ -102,6 +101,9 @@ class Product(AbstractModels):
 
 
 class Attribute(AbstractModels):
+    """
+    Name characteristic product
+    """
     type = models.CharField(choices=TypeValue.CHOISES(),
                             max_length=8,
                             default=TypeValue.CHAR)
@@ -166,12 +168,11 @@ class ProductItems(models.Model):
         default=None,
         related_name='product_items')
     quantity = models.IntegerField(_('Quantity of products'), validators=[MinValueValidator(0)], default=0)
-    create_at = models.DateTimeField(_('Создан'), auto_now_add=True)
+    create_at = models.DateTimeField(_('Created'), auto_now_add=True)
     is_active = models.BooleanField(_("Is active"), default=True)
 
     @property
     def remains(self):
-        # TODO учет по активным корзинам не отменённым
         if self.quantity == 0:
             return 0
         quantity_dct = self.position_product.aggregate(Sum('quantity'))
@@ -202,7 +203,7 @@ class PromoCode(AbstractModels):
         permissions = []
 
     @property
-    def remains(self):
+    def remainder(self):
         if self.quantity == 0:
             return 0
         return self.quantity - self.basket.all().count()
@@ -214,12 +215,10 @@ class Basket(models.Model):
         on_delete=models.CASCADE,
         null=True,
         related_name='basket')
-    create_at = models.DateTimeField(_('Создан'), auto_now_add=True)
+    create_at = models.DateTimeField(_('Created'), auto_now_add=True)
     promocode = models.ForeignKey(
-        PromoCode, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='basket')
+        PromoCode, blank=True, on_delete=models.CASCADE,
+        null=True, related_name='basket')
     status = models.CharField(choices=Status.CHOISES(), max_length=9, blank=True)
 
     @property
@@ -255,22 +254,20 @@ class Basket(models.Model):
 
 
 class PositionProduct(models.Model):
-    """
-    Позиция товара + количество
-    """
-    # TODO  валидацию по остаткам
+
     product_items = models.ForeignKey(
         ProductItems, blank=True,
         on_delete=models.PROTECT,
         null=True,
         related_name='position_product')
-    quantity = models.IntegerField(_('Quantity of products'), validators=[MinValueValidator(0)], default=0)
+    quantity = models.IntegerField(
+        _('Quantity of products'), validators=[MinValueValidator(0)], default=0)
     basket = models.ForeignKey(
         Basket, blank=True,
         on_delete=models.CASCADE,
         null=True,
         related_name='position_product')
-    create_at = models.DateTimeField(_('Создан'), auto_now_add=True)
+    create_at = models.DateTimeField(_('Created'), auto_now_add=True)
 
     class Meta:
         verbose_name = _('Position product')
@@ -294,10 +291,7 @@ class PositionProduct(models.Model):
 
 
 class ProductsCompare(models.Model):
-    """
-    сделать ограничение на запись не больше 5 на одного юзера
-    сортировка по лучшему значению
-    """
+
     products = models.ForeignKey(
         Product, blank=True,
         on_delete=models.SET_NULL,
@@ -309,7 +303,7 @@ class ProductsCompare(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name='products_compare')
-    create_at = models.DateTimeField(_('Создан'), auto_now_add=True)
+    create_at = models.DateTimeField(_('Created'), auto_now_add=True)
 
     class Meta:
         verbose_name = _('Products for compare')

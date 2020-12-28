@@ -18,8 +18,8 @@ urlpatterns = [
     path('product/', ProductViewSet.as_view({'get': 'list'}), name='product'),
     path('product/<int:pk>/', ProductViewSet.as_view(as_view_with_pk), name='product_pk'),
 
-    path('category/', CategoryViewSet.as_view(as_view_common), name='customer'),
-    path('category/<int:pk>/', CategoryViewSet.as_view(as_view_with_pk), name='customer_pk'),
+    path('category/', CategoryViewSet.as_view(as_view_common), name='category'),
+    path('category/<int:pk>/', CategoryViewSet.as_view(as_view_with_pk), name='category_pk'),
 
     path('compare/', ProductsCompareViewSet.as_view(as_view_common), name='compare'),
     path('compare/<int:pk>/', ProductsCompareViewSet.as_view({'delete': 'destroy'}), name='compare_pk'),

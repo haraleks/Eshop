@@ -7,6 +7,38 @@ from users.utils import vaildation_password
 User = get_user_model()
 
 
+class CustomerRegistrationSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
+    password2 = serializers.CharField(required=True)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    sex = serializers.CharField(required=False)
+    date_of_birth = serializers.DateField(required=False)
+
+    def validate_password(self, data):
+        errors_dct = vaildation_password(data)
+        if errors_dct:
+            raise serializers.ValidationError(errors_dct)
+        return data
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": ["Password doesn't match"]})
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        # TODO правка на мыло почты
+        email = validated_data.pop('email')
+        password = validated_data.pop('password')
+        validated_data.pop('password2')
+        user = User.objects.create_user(
+            email=email, password=password)
+        validated_data['user'] = user
+        customer = Customer.objects.create(**validated_data)
+        return customer
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField()
 

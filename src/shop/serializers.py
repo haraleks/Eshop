@@ -18,7 +18,6 @@ class AttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Value
         fields = ['attribute', 'value']
-        # fields = "__all__"
 
     def get_attribute(self, instance):
         return instance.attribute.name
@@ -111,7 +110,6 @@ class ProductsCompareSerializer(serializers.ModelSerializer):
 
 
 class WishListSerializer(serializers.ModelSerializer):
-    # product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), many=True)
 
     class Meta:
         model = DesiredProducts
@@ -156,7 +154,6 @@ class AddedProductInBasketSerializer(serializers.Serializer):
             basket = Basket.objects.create(status=Status.CREATED.value,
                                            customer=customer)
         product = Product.objects.get(pk=validated_data.pop('product'))
-        print(product)
         position_product = PositionProduct.objects.create(product_items=product.product_items,
                                                           quantity=validated_data['quantity'],
                                                           basket=basket)

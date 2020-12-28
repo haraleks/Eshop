@@ -10,8 +10,7 @@ User = get_user_model()
 
 class Customer(models.Model):
     user = models.OneToOneField(
-        User, related_name='client_profile', on_delete=models.CASCADE
-    )
+        User, related_name='client_profile', on_delete=models.CASCADE)
     first_name = models.CharField(_('First name'), max_length=155)
     last_name = models.CharField(_('Last name'), max_length=155, blank=True, default='')
     sex = models.CharField(
@@ -37,6 +36,10 @@ class Customer(models.Model):
     @property
     def age(self):
         return calculate_age(self.date_of_birth)
+
+    @property
+    def count_product_desired(self):
+        return self.desired_products.all().count()
 
     def __str__(self):
         return str(self.full_name)

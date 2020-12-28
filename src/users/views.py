@@ -1,19 +1,26 @@
 from django.contrib.auth import get_user_model
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from users.models.profile_models import Customer
-from users.serializers import CustomerSerializer, UpdateCustomerSerializer, ChangePasswordUserSerializer
+from users.serializers import (CustomerSerializer, UpdateCustomerSerializer, ChangePasswordUserSerializer,
+                               CustomerRegistrationSerializer)
 
 User = get_user_model()
 
 
 class CustomerRegistration(ModelViewSet):
-
     serializer_class = CustomerSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Customer.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = CustomerRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        model = serializer.create(serializer.data)
+        serializer = self.get_serializer(model)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -41,3 +48,9 @@ class ChangePasswordUser(ModelViewSet):
             response = serializer.save()
 
         return Response(response)
+
+
+class DeletedCustomer(ModelViewSet):
+    serializer_class = CustomerSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = Customer.objects.all()

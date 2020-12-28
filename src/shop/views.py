@@ -12,7 +12,7 @@ from shop.serializers import (ProductSerializer, CategorySerializer, ProductDeta
 
 class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     queryset = Product.objects.all()
     filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     filterset_fields = ['price', 'subcategory', 'subcategory__category']
@@ -32,7 +32,7 @@ class ProductViewSet(ModelViewSet):
 
 class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     queryset = Category.objects.all()
     filter_backends = (rest_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     filterset_fields = ['name']
@@ -42,15 +42,11 @@ class CategoryViewSet(ModelViewSet):
 
 class ProductsCompareViewSet(ModelViewSet):
     serializer_class = ProductsCompareSerializer
-    # TODO могут ли не авторизованные пользователи?
     permission_classes = [permissions.IsAuthenticated]
     queryset = ProductsCompare.objects.all()
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        if request.user.is_anonymous:
-            # TODO если анонимный пользователь то что?
-            pass
         queryset = queryset.filter(customer=request.user.client_profile)
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -127,7 +123,6 @@ class SendPayBasket(ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        # TODO делать проверку на пользователя
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)

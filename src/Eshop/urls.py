@@ -41,16 +41,10 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('auth/', include('djoser.urls.jwt')),
     path('auth/', include('djoser.urls.base')),
-    # path('auth/', include('djoser.social.urls')),
     path('auth/', include('rest_framework_social_oauth2.urls')),
-    # path('logout/', auth_logout, {'next_page': settings.LOGOUT_REDIRECT_URL}, name='logout'),
-
-    # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
 
     path('api/v1/', include('shop.urls')),
-    path('api/v1/account/', include('users.urls')),
+    path('api/v1/', include('users.urls')),
 
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0),
             name='schema-swagger-ui'),
