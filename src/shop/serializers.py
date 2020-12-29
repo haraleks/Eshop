@@ -39,10 +39,14 @@ class ProductSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_category(self, instance):
-        return instance.subcategory.category.name
+        if instance.subcategory:
+            return instance.subcategory.category.name
+        return ''
 
     def get_subcategory(self, instance):
-        return instance.subcategory.name
+        if instance.subcategory:
+            return instance.subcategory.name
+        return ''
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
@@ -87,7 +91,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductsCompareSerializer(serializers.ModelSerializer):
-    products = ProductSerializer(Product.objects.all())
+    # products = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
 
     class Meta:
         model = ProductsCompare

@@ -42,6 +42,17 @@ class TestCustomerRegistration(InitClass):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['first_name'], data['first_name'])
 
+    def test_change_password(self):
+
+        data = {
+            "old_password": "PaSwOrD123",
+            "new_password": "Newpassword123#",
+            "new_password2": "Newpassword123#"
+        }
+        response = self.customer_client.put(reverse('customer_pass'), data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'success')
+
     def test_delete(self):
         response = self.customer_client.delete(self.path_pk)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

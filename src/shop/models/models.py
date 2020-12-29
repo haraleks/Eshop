@@ -219,7 +219,7 @@ class Basket(models.Model):
     promocode = models.ForeignKey(
         PromoCode, blank=True, on_delete=models.CASCADE,
         null=True, related_name='basket')
-    status = models.CharField(choices=Status.CHOISES(), max_length=9, blank=True)
+    status = models.CharField(choices=Status.CHOISES(), max_length=9, default=Status.CREATED.value)
 
     @property
     def total_order(self):

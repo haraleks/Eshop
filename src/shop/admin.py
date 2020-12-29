@@ -68,7 +68,6 @@ class ProductAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        # TODO main_character__value_model__value_char ???
         queryset = queryset.annotate(
             _category=F('subcategory__category__name'),
             _main_character=F('main_character__value_model__value_char')

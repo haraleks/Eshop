@@ -5,12 +5,15 @@ from rest_framework.test import (APIClient, APITestCase,
                                  URLPatternsTestCase)
 from rest_framework_simplejwt.tokens import AccessToken
 
+from shop.models import Category, Subcategory, Product, Basket, ProductItems, PositionProduct
 from users.models.profile_models import Customer
+from faker import Faker
 
 SIMPLE_JWT = settings.SIMPLE_JWT
 
 
 class InitClass(APITestCase, URLPatternsTestCase):
+    fake = Faker()
     User = get_user_model()
 
     urlpatterns = [
@@ -19,14 +22,14 @@ class InitClass(APITestCase, URLPatternsTestCase):
     ]
 
     def create_user(self):
-        user = self.User.objects.create(email='testuser@gmail.com',
+        user = self.User.objects.create(email=self.fake.email(),
                                         password='PaSwOrD123')
         access = AccessToken.for_user(user)
         client = self.login_user(access)
         return user, client
 
-    def create_customer(self, email='testcustom@gmail.com', password='PaSwOrD123'):
-        user, _ = self.User.objects.get_or_create(email=email, password=password, is_superuser=False)
+    def create_customer(self, email=fake.email(), password='PaSwOrD123'):
+        user = self.User.objects.create_user(email=email, password=password, is_superuser=False)
         profile, _ = Customer.objects.get_or_create(user=user)
         user = self.User.objects.get(pk=user.pk)
         access = AccessToken.for_user(user)
@@ -55,3 +58,35 @@ class InitClass(APITestCase, URLPatternsTestCase):
     def login_user_model(self, user):
         access = AccessToken.for_user(user)
         return self.login_user(access)
+
+    def create_product(self):
+        category, _ = Category.objects.get_or_create(
+            name=self.fake.name()
+        )
+        subcategory, _ = Subcategory.objects.get_or_create(
+            name=self.fake.name(),
+            category=category
+        )
+        product, _ = Product.objects.get_or_create(
+            price=1000,
+            description=self.fake.text(),
+            name=self.fake.name(),
+            subcategory=subcategory
+        )
+        return product
+
+    def added_basket(self, customer):
+        product = self.create_product()
+        basket, _ = Basket.objects.get_or_create(
+            customer=customer,
+        )
+        ProductItems.objects.get_or_create(
+            product=product,
+            quantity=2
+        )
+        position_product, _ = PositionProduct.objects.get_or_create(
+            product_items=product.product_items,
+            quantity=2,
+            basket=basket
+        )
+        return basket, position_product

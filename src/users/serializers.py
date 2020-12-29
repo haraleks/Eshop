@@ -28,7 +28,6 @@ class CustomerRegistrationSerializer(serializers.Serializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        # TODO правка на мыло почты
         email = validated_data.pop('email')
         password = validated_data.pop('password')
         validated_data.pop('password2')
@@ -76,16 +75,21 @@ class UpdateCustomerSerializer(CustomerSerializer):
 
 
 class ChangePasswordUserSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
     new_password = serializers.CharField()
+    new_password2 = serializers.CharField()
 
-    def validate_new_password(self, data):
+    def validate(self, attrs):
         user = self.context['request'].user
-        if user.check_password(data):
+        if not user.check_password(attrs['old_password']):
+            raise serializers.ValidationError("Old password is not the same")
+        if attrs['new_password'] == attrs['old_password']:
             raise serializers.ValidationError("You entered your old password")
-        errors_dct = vaildation_password(data)
-        if errors_dct:
-            raise serializers.ValidationError(errors_dct)
-        return data
+        else:
+            errors_dct = vaildation_password(attrs['new_password'])
+            if errors_dct:
+                raise serializers.ValidationError(errors_dct)
+            return attrs
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
