@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from users.models.profile_models import Customer
+from users.permissions import CRUDCustomerPermission
 from users.serializers import (CustomerSerializer, UpdateCustomerSerializer, ChangePasswordUserSerializer,
                                CustomerRegistrationSerializer)
 
@@ -12,9 +14,12 @@ User = get_user_model()
 
 class CustomerRegistration(ModelViewSet):
     serializer_class = CustomerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [CRUDCustomerPermission]
     queryset = Customer.objects.all()
 
+    @swagger_auto_schema(query_serializer=CustomerRegistrationSerializer,
+                         operation_description='Register customer and user',
+                         responses={201: CustomerSerializer})
     def create(self, request, *args, **kwargs):
         serializer = CustomerRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -40,6 +45,9 @@ class ChangePasswordUser(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = User.objects.all()
 
+    @swagger_auto_schema(query_serializer=ChangePasswordUserSerializer,
+                         operation_description='Change password user',
+                         responses={200: "'status': 'success', 'message': 'Password updated successfully'"})
     def update(self, request, *args, **kwargs):
         instance = request.user
         serializer = ChangePasswordUserSerializer(instance, data=request.data,

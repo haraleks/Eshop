@@ -26,6 +26,10 @@ How start?
 
     `make run`
 
+Issue:
+  If you have this error: FileNotFoundError: [Errno 2] No such file or directory: '/usr/src/logs/debug.log'
+  add dir 'logs' to src/ Example: src/logs/
+
 * Stoped:
 
     `make stop`
@@ -34,7 +38,7 @@ How start?
 How enter?
 ***************
 
-Open browser: `0.0.0.0:8000 <http://0.0.0.0:8000>`_
+Open browser: `0.0.0.0:5000 <http://0.0.0.0:5000>`_
 
 ****************
 How test?

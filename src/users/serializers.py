@@ -65,7 +65,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = '__all__'
+        exclude = ['is_active']
 
 
 class UpdateCustomerSerializer(CustomerSerializer):
