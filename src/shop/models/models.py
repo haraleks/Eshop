@@ -1,22 +1,12 @@
-import random
-
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import Sum, F, Q
+from django.db.models import Sum, F
 from django.utils.translation import ugettext_lazy as _
 
+from shop.managers import ProductManager
 from shop.utils import discount_birthday
 from users.constants import TypeValue, Status, SexProduct
 from users.models.profile_models import Customer
-
-
-class UserManager(models.Manager):
-    def random(self, sex=None, subcategory=None, exclude_id=None, age=None):
-        instance = list(self.filter(
-            Q(age_to__gte=age) & Q(age_from__lte=age),
-            sex=sex, subcategory=subcategory).exclude(pk=exclude_id))
-        random.shuffle(instance)
-        return instance
 
 
 class AbstractModels(models.Model):
@@ -91,7 +81,7 @@ class Product(AbstractModels):
                                             null=True,
                                             related_name='products')
 
-    objects = UserManager()
+    objects = ProductManager()
 
     class Meta:
         verbose_name = _('Product')
