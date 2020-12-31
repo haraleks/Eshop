@@ -57,6 +57,9 @@ class Subcategory(AbstractModels):
 
 
 class Product(AbstractModels):
+    """
+    Price - base items is 1/100 in currency
+    """
 
     price = models.IntegerField(_('Price'),
                                 validators=[MinValueValidator(0)],
