@@ -6,7 +6,7 @@ from django.db.models import Count, F
 from django.http import HttpResponse
 
 from shop.models import (Category, Subcategory, Product,
-                         Attribute, Value, ProductItems,
+                         Attribute, Value, ProductQuantity,
                          PromoCodes, Cart, PositionProduct,
                          ProductsCompare, WishList,
                          Feedback)
@@ -89,7 +89,7 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(Subcategory)
 admin.site.register(Attribute)
 admin.site.register(Value)
-admin.site.register(ProductItems)
+admin.site.register(ProductQuantity)
 
 
 def is_active_change(modeladmin, request, queryset):

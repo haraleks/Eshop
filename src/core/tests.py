@@ -5,7 +5,7 @@ from rest_framework.test import (APIClient, APITestCase,
                                  URLPatternsTestCase)
 from rest_framework_simplejwt.tokens import AccessToken
 
-from shop.models import Category, Subcategory, Product, Cart, ProductItems, PositionProduct
+from shop.models import Category, Subcategory, Product, Cart, ProductQuantity, PositionProduct
 from users.models.profile_models import Customer
 from faker import Faker
 
@@ -80,7 +80,7 @@ class InitClass(APITestCase, URLPatternsTestCase):
         cart, _ = Cart.objects.get_or_create(
             customer=customer,
         )
-        ProductItems.objects.get_or_create(
+        ProductQuantity.objects.get_or_create(
             product=product,
             quantity=2
         )
