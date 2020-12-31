@@ -86,10 +86,10 @@ class Product(AbstractModels):
     age_to = models.IntegerField(_('Age max'), blank=True, null=True)
     is_active = models.BooleanField(_("Is active"), default=True)
     # TODO make m2m
-    main_character = models.ForeignKey('Attribute', blank=True,
-                                       on_delete=models.CASCADE,
-                                       null=True,
-                                       related_name='products')
+    main_characteristic = models.ForeignKey('Attribute', blank=True,
+                                            on_delete=models.CASCADE,
+                                            null=True,
+                                            related_name='products')
 
     objects = UserManager()
 
