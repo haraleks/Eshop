@@ -3,11 +3,11 @@ from rest_framework import permissions, filters, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from shop.models import (Product, Category, ProductsCompare, DesiredProducts, PositionProduct, Basket, Status)
+from shop.models import (Product, Category, ProductsCompare, WishList, PositionProduct, Cart, Status)
 from shop.serializers import (ProductSerializer, CategorySerializer, ProductDetailSerializer,
                               ProductsCompareSerializer, WishListSerializer, SubWishListSerializer,
-                              AddedProductInBasketSerializer, PositionProductSerializer, BasketSerializer,
-                              SendPayBasketSerializer)
+                              AddedProductInCartsSerializer, PositionProductSerializer, CartsSerializer,
+                              SendPayCartsSerializer)
 
 
 class ProductViewSet(ModelViewSet):
@@ -60,7 +60,7 @@ class ProductsCompareViewSet(ModelViewSet):
 class WishListViewSet(ModelViewSet):
     serializer_class = WishListSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = DesiredProducts.objects.all()
+    queryset = WishList.objects.all()
 
     def list(self, request, *args, **kwargs):
         querysets = self.filter_queryset(self.get_queryset())
@@ -82,7 +82,7 @@ class WishListViewSet(ModelViewSet):
 
 
 class PositionProductsViewSet(ModelViewSet):
-    serializer_class = AddedProductInBasketSerializer
+    serializer_class = AddedProductInCartsSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = PositionProduct.objects.all()
 
@@ -96,10 +96,10 @@ class PositionProductsViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class BasketViewSet(ModelViewSet):
-    serializer_class = BasketSerializer
+class CartsViewSet(ModelViewSet):
+    serializer_class = CartsSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Basket.objects.all()
+    queryset = Cart.objects.all()
 
     def list(self, request, *args, **kwargs):
         customer = request.user.client_profile
@@ -115,10 +115,10 @@ class BasketViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class SendPayBasket(ModelViewSet):
-    serializer_class = SendPayBasketSerializer
+class SendPayCarts(ModelViewSet):
+    serializer_class = SendPayCartsSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Basket.objects.all()
+    queryset = Cart.objects.all()
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)

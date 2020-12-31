@@ -3,7 +3,7 @@ version: "3.7"
 services:
   web:
     build: ./src
-    command: gunicorn Eshop.wsgi:application --bind 0.0.0.0:5000 --reload
+    command: gunicorn eshop.wsgi:application --bind 0.0.0.0:5000 --reload
     volumes:
       - ./src/:/usr/src/
       - static_data:/usr/src/staticfiles/
@@ -25,7 +25,7 @@ services:
 
   celery:
     build: ./src
-    command: celery -A Eshop worker -l info --logfile=logs/celery.log
+    command: celery -A eshop worker -l info --logfile=logs/celery.log
     volumes:
       - ./src/:/usr/src/
     env_file:

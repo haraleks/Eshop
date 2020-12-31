@@ -22,7 +22,7 @@ class CustomerAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         queryset = queryset.annotate(
-            _count_product_wish=Count('desired_products', distinct=True))
+            _count_product_wish=Count('wish_lists', distinct=True))
         return queryset
 
     def count_product_wish(self, obj):
