@@ -9,7 +9,7 @@ from users.constants import TypeValue, Status, SexProduct
 from users.models.profile_models import Customer
 
 
-class AbstractModels(models.Model):
+class AbstractBaseNameModels(models.Model):
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(_('Date created'), auto_now_add=True)
 
@@ -21,7 +21,7 @@ class AbstractModels(models.Model):
         return self.name
 
 
-class Category(AbstractModels):
+class Category(AbstractBaseNameModels):
     class Meta:
         verbose_name = _('Category')
         verbose_name_plural = _('Categories')
@@ -37,7 +37,7 @@ class Category(AbstractModels):
         return Product.objects.filter(subcategory__in=all_subcategory).count()
 
 
-class Subcategory(AbstractModels):
+class Subcategory(AbstractBaseNameModels):
     category = models.ForeignKey(Category, blank=True,
                                  on_delete=models.CASCADE,
                                  null=True,
@@ -56,7 +56,7 @@ class Subcategory(AbstractModels):
         return f'{self.category.name} - {self.name}'
 
 
-class Product(AbstractModels):
+class Product(AbstractBaseNameModels):
     """
     Price - base items is 1/100 in currency
     """
@@ -92,7 +92,7 @@ class Product(AbstractModels):
         permissions = []
 
 
-class Attribute(AbstractModels):
+class Attribute(AbstractBaseNameModels):
     """
     Name characteristic product
     """
@@ -149,7 +149,7 @@ class Value(models.Model):
         return f'{self.attribute.name} : {self.value}'
 
 
-class ProductItems(models.Model):
+class ProductQuantity(models.Model):
     """
     model is count quantity product
     """
@@ -181,7 +181,7 @@ class ProductItems(models.Model):
         return f'{self.product.name} : {self.quantity}'
 
 
-class PromoCodes(AbstractModels):
+class PromoCodes(AbstractBaseNameModels):
     code = models.CharField(_('Code'), max_length=50,
                             blank=True, default='')
     quantity = models.PositiveIntegerField(_('Quantity of cods'), default=0)
@@ -249,7 +249,7 @@ class Cart(models.Model):
 
 class PositionProduct(models.Model):
 
-    product_items = models.ForeignKey(ProductItems, blank=True,
+    product_items = models.ForeignKey(ProductQuantity, blank=True,
                                       on_delete=models.PROTECT,
                                       null=True,
                                       related_name='position_products')
