@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from shop.models import Product, Value, Category, Subcategory, Feedback, ProductsCompare, DesiredProducts, \
-    PositionProduct, Basket
+from shop.models import Product, Value, Category, Subcategory, Feedback, ProductsCompare, WishList, \
+    PositionProduct, Cart
 from users.constants import Status
 
 
@@ -35,7 +35,7 @@ class ProductSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_characteristic(self, intsance):
-        serializer = AttributeSerializer(intsance.value_model.all(), many=True)
+        serializer = AttributeSerializer(intsance.values.all(), many=True)
         return serializer.data
 
     def get_category(self, instance):
@@ -116,19 +116,19 @@ class ProductsCompareSerializer(serializers.ModelSerializer):
 class WishListSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = DesiredProducts
+        model = WishList
         fields = ['id', 'product']
 
     def create(self, validated_data):
         customer = self.context['request'].user.client_profile
         product = validated_data.pop('product')
-        wish_list = DesiredProducts.objects.create(customer=customer,
-                                                   product=product)
+        wish_list = WishList.objects.create(customer=customer,
+                                            product=product)
         return wish_list
 
     def validate(self, attrs):
         customer = self.context['request'].user.client_profile
-        is_product = DesiredProducts.objects.filter(customer=customer, product=attrs['product']).exists()
+        is_product = WishList.objects.filter(customer=customer, product=attrs['product']).exists()
         if is_product:
             raise serializers.ValidationError({'Product:': "You added this product in your wish list"})
         return super().validate(attrs)
@@ -142,25 +142,25 @@ class SubWishListSerializer(serializers.ModelSerializer):
         fields = ['name', 'products']
 
     def get_products(self, instance):
-        products = instance.product.filter(id__in=[p.product.id for p in self.context['queryset']])
+        products = instance.products.filter(id__in=[p.product.id for p in self.context['queryset']])
         return ProductSerializer(products, many=True).data
 
 
-class AddedProductInBasketSerializer(serializers.Serializer):
+class AddedProductInCartsSerializer(serializers.Serializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
     quantity = serializers.IntegerField()
 
     def create(self, validated_data):
         customer = self.context['request'].user.client_profile
-        basket = Basket.objects.filter(customer=customer,
-                                       status=Status.CREATED.value).order_by('pk').last()
-        if not basket:
-            basket = Basket.objects.create(status=Status.CREATED.value,
-                                           customer=customer)
+        cart = Cart.objects.filter(customer=customer,
+                                   status=Status.CREATED.value).order_by('pk').last()
+        if not cart:
+            cart = Cart.objects.create(status=Status.CREATED.value,
+                                       customer=customer)
         product = Product.objects.get(pk=validated_data.pop('product'))
         position_product = PositionProduct.objects.create(product_items=product.product_items,
                                                           quantity=validated_data['quantity'],
-                                                          basket=basket)
+                                                          cart=cart)
         return position_product
 
     def validate(self, attrs):
@@ -176,23 +176,23 @@ class PositionProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'product_name', 'product_price', 'quantity', 'total_product_price']
 
 
-class BasketSerializer(serializers.ModelSerializer):
+class CartsSerializer(serializers.ModelSerializer):
     position_products = serializers.SerializerMethodField()
 
     class Meta:
-        model = Basket
+        model = Cart
         fields = ['id', 'position_products', 'customer', 'create_at',
-                  'promocode', 'status', 'total_order', 'discount',
+                  'promo_code', 'status', 'total_order', 'discount',
                   'total_with_discount']
 
     def get_position_products(self, instance):
-        position_products = instance.position_product.all()
+        position_products = instance.position_products.all()
         return PositionProductSerializer(position_products, many=True).data
 
 
-class SendPayBasketSerializer(serializers.ModelSerializer):
+class SendPayCartsSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Basket
+        model = Cart
         fields = ['id', 'status']
-        read_only_fields = ['customer', 'create_at', 'promocode']
+        read_only_fields = ['customer', 'create_at', 'promocodes']

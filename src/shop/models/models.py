@@ -48,11 +48,10 @@ class Category(AbstractModels):
 
 
 class Subcategory(AbstractModels):
-    category = models.ForeignKey(
-        Category, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='subcategory')
+    category = models.ForeignKey(Category, blank=True,
+                                 on_delete=models.CASCADE,
+                                 null=True,
+                                 related_name='subcategory')
 
     class Meta:
         verbose_name = _('Subcategory')
@@ -60,8 +59,8 @@ class Subcategory(AbstractModels):
         permissions = []
 
     @property
-    def count_prodact(self):
-        return self.product.all().count()
+    def count_product(self):
+        return self.products.all().count()
 
     def __str__(self):
         return f'{self.category.name} - {self.name}'
@@ -69,30 +68,30 @@ class Subcategory(AbstractModels):
 
 class Product(AbstractModels):
 
-    objects = UserManager()
-
-    price = models.IntegerField(_('Price'), validators=[MinValueValidator(0)], default=0)
-    sku = models.CharField(_('SKU'), max_length=50, blank=True, default='')
+    price = models.IntegerField(_('Price'),
+                                validators=[MinValueValidator(0)],
+                                default=0)
+    sku = models.CharField(_('SKU'), max_length=50,
+                           blank=True, default='')
     description = models.TextField(_('Description product'), blank=True)
-    subcategory = models.ForeignKey(
-        Subcategory, blank=True,
-        on_delete=models.PROTECT,
-        null=True,
-        related_name='product')
-    sex = models.CharField(
-        _('Sex'),
-        choices=SexProduct.CHOISES(),
-        max_length=1,
-        default=SexProduct.UNISEX.value,
-        blank=True)
+    subcategory = models.ForeignKey(Subcategory, blank=True,
+                                    on_delete=models.PROTECT,
+                                    null=True,
+                                    related_name='products')
+    sex = models.CharField(_('Sex'), choices=SexProduct.CHOISES(),
+                           max_length=1,
+                           default=SexProduct.UNISEX.value,
+                           blank=True)
     age_from = models.IntegerField(_('Age min'), blank=True, null=True)
     age_to = models.IntegerField(_('Age max'), blank=True, null=True)
     is_active = models.BooleanField(_("Is active"), default=True)
-    main_character = models.ForeignKey(
-        'Attribute', blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='main_character_product')
+    # TODO make m2m
+    main_character = models.ForeignKey('Attribute', blank=True,
+                                       on_delete=models.CASCADE,
+                                       null=True,
+                                       related_name='products')
+
+    objects = UserManager()
 
     class Meta:
         verbose_name = _('Product')
@@ -118,17 +117,16 @@ class Attribute(AbstractModels):
 
 
 class Value(models.Model):
-    attribute = models.ForeignKey(
-        Attribute, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='value_model')
-    product = models.ForeignKey(
-        Product, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='value_model')
-    value_char = models.CharField(max_length=300, blank=True, default='')
+    attribute = models.ForeignKey(Attribute, blank=True,
+                                  on_delete=models.CASCADE,
+                                  null=True,
+                                  related_name='values')
+    product = models.ForeignKey(Product, blank=True,
+                                on_delete=models.CASCADE,
+                                null=True,
+                                related_name='values')
+    value_char = models.CharField(max_length=300, blank=True,
+                                  default='')
     value_int = models.IntegerField(blank=True, null=True)
     value_float = models.FloatField(blank=True, null=True)
     value_bool = models.BooleanField(null=True)
@@ -162,12 +160,13 @@ class ProductItems(models.Model):
     """
     model is count quantity product
     """
-    product = models.OneToOneField(
-        Product, blank=True,
-        on_delete=models.CASCADE,
-        default=None,
-        related_name='product_items')
-    quantity = models.IntegerField(_('Quantity of products'), validators=[MinValueValidator(0)], default=0)
+    product = models.OneToOneField(Product, blank=True,
+                                   on_delete=models.CASCADE,
+                                   default=None,
+                                   related_name='product_items')
+    quantity = models.IntegerField(_('Quantity of products'),
+                                   validators=[MinValueValidator(0)],
+                                   default=0)
     create_at = models.DateTimeField(_('Created'), auto_now_add=True)
     is_active = models.BooleanField(_("Is active"), default=True)
 
@@ -175,7 +174,7 @@ class ProductItems(models.Model):
     def remains(self):
         if self.quantity == 0:
             return 0
-        quantity_dct = self.position_product.aggregate(Sum('quantity'))
+        quantity_dct = self.position_products.aggregate(Sum('quantity'))
         if not quantity_dct['quantity__sum']:
             quantity_dct['quantity__sum'] = 0
         return self.quantity - quantity_dct['quantity__sum']
@@ -189,57 +188,59 @@ class ProductItems(models.Model):
         return f'{self.product.name} : {self.quantity}'
 
 
-class PromoCode(AbstractModels):
-    code = models.CharField(_('Code'), max_length=50, blank=True, default='')
+class PromoCodes(AbstractModels):
+    code = models.CharField(_('Code'), max_length=50,
+                            blank=True, default='')
     quantity = models.PositiveIntegerField(_('Quantity of cods'), default=0)
-    discount = models.IntegerField(
-        _('Discount'), blank=True, null=True,
-        default=0, validators=[MinValueValidator(1), MaxValueValidator(30)])
+    discount = models.IntegerField(_('Discount'), default=0,
+                                   validators=[MinValueValidator(1), MaxValueValidator(30)])
     is_active = models.BooleanField(_("Is active code"), default=True)
 
     class Meta:
         verbose_name = _('Promo code')
-        verbose_name_plural = _('Promo cods')
+        verbose_name_plural = _('Promo codes')
         permissions = []
 
     @property
     def remainder(self):
         if self.quantity == 0:
             return 0
-        return self.quantity - self.basket.all().count()
+        return self.quantity - self.carts.all().count()
 
 
-class Basket(models.Model):
-    customer = models.ForeignKey(
-        Customer, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='basket')
+class Cart(models.Model):
+    customer = models.ForeignKey(Customer, blank=True,
+                                 on_delete=models.CASCADE,
+                                 null=True,
+                                 related_name='carts')
     create_at = models.DateTimeField(_('Created'), auto_now_add=True)
-    promocode = models.ForeignKey(
-        PromoCode, blank=True, on_delete=models.CASCADE,
-        null=True, related_name='basket')
-    status = models.CharField(choices=Status.CHOISES(), max_length=9, default=Status.CREATED.value)
+    promo_code = models.ForeignKey(PromoCodes, blank=True,
+                                   on_delete=models.CASCADE,
+                                   null=True,
+                                   related_name='carts')
+    status = models.CharField(choices=Status.CHOISES(),
+                              max_length=9,
+                              default=Status.CREATED.value)
 
     @property
     def total_order(self):
-        total = self.position_product.annotate(
+        total = self.position_products.annotate(
             total_price=F('product_items__product__price') * F('quantity')).\
             aggregate(Sum('total_price'))
         return total['total_price__sum']
 
     @property
-    def promocod_discount(self):
-        if self.promocode and self.promocode.is_active:
-            return self.promocode.discount
+    def promo_codes_discount(self):
+        if self.promo_code and self.promo_code.is_active:
+            return self.promo_code.discount
         return 0
 
     @property
     def discount(self):
         discount_birth = discount_birthday(self.customer.date_of_birth)
-        if discount_birth and discount_birth > self.promocod_discount:
+        if discount_birth and discount_birth > self.promo_codes_discount:
             return discount_birth
-        return self.promocod_discount
+        return self.promo_codes_discount
 
     @property
     def total_with_discount(self):
@@ -248,25 +249,23 @@ class Basket(models.Model):
         return self.total_order
 
     class Meta:
-        verbose_name = _('Basket')
-        verbose_name_plural = _('Baskets')
+        verbose_name = _('Cart')
+        verbose_name_plural = _('Carts')
         permissions = []
 
 
 class PositionProduct(models.Model):
 
-    product_items = models.ForeignKey(
-        ProductItems, blank=True,
-        on_delete=models.PROTECT,
-        null=True,
-        related_name='position_product')
-    quantity = models.IntegerField(
-        _('Quantity of products'), validators=[MinValueValidator(0)], default=0)
-    basket = models.ForeignKey(
-        Basket, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='position_product')
+    product_items = models.ForeignKey(ProductItems, blank=True,
+                                      on_delete=models.PROTECT,
+                                      null=True,
+                                      related_name='position_products')
+    quantity = models.IntegerField(_('Quantity of products'),
+                                   validators=[MinValueValidator(0)], default=0)
+    cart = models.ForeignKey(Cart, blank=True,
+                             on_delete=models.CASCADE,
+                             null=True,
+                             related_name='position_products')
     create_at = models.DateTimeField(_('Created'), auto_now_add=True)
 
     class Meta:
@@ -287,22 +286,19 @@ class PositionProduct(models.Model):
         return self.product_items.product.price * self.quantity
 
     def __str__(self):
-        return f'{self.basket} : {self.product_items} | {self.quantity} ({self.basket.customer})'
+        return f'{self.cart} : {self.product_items} | {self.quantity} ({self.cart.customer})'
 
 
 class ProductsCompare(models.Model):
 
-    products = models.ForeignKey(
-        Product, blank=True,
-        on_delete=models.SET_NULL,
-        null=True,
-        default=None,
-        related_name='products_compare')
-    customer = models.ForeignKey(
-        Customer, blank=True,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='products_compare')
+    products = models.ForeignKey(Product, blank=True,
+                                 on_delete=models.SET_NULL,
+                                 null=True, default=None,
+                                 related_name='products_comprises')
+    customer = models.ForeignKey(Customer, blank=True,
+                                 on_delete=models.SET_NULL,
+                                 null=True,
+                                 related_name='products_comprises')
     create_at = models.DateTimeField(_('Created'), auto_now_add=True)
 
     class Meta:
@@ -311,24 +307,22 @@ class ProductsCompare(models.Model):
         permissions = []
 
 
-class DesiredProducts(models.Model):
+class WishList(models.Model):
     """
     model wish list products
     """
-    customer = models.ForeignKey(
-        Customer, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='desired_products')
-    product = models.ForeignKey(
-        Product, blank=True,
-        on_delete=models.CASCADE,
-        null=True,
-        related_name='desired_products')
+    customer = models.ForeignKey(Customer, blank=True,
+                                 on_delete=models.CASCADE,
+                                 null=True,
+                                 related_name='wish_lists')
+    product = models.ForeignKey(Product, blank=True,
+                                on_delete=models.CASCADE,
+                                null=True,
+                                related_name='wish_lists')
 
     class Meta:
-        verbose_name = _('Desired Products')
-        verbose_name_plural = _('Desired Products')
+        verbose_name = _('Wish list')
+        verbose_name_plural = _('Wish lists')
         permissions = []
 
     def __str__(self):
@@ -336,17 +330,15 @@ class DesiredProducts(models.Model):
 
 
 class Feedback(models.Model):
-    customer = models.ForeignKey(
-        Customer, blank=True,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='feedback')
+    customer = models.ForeignKey(Customer, blank=True,
+                                 on_delete=models.SET_NULL,
+                                 null=True,
+                                 related_name='feedbacks')
     text = models.TextField(blank=True)
-    product = models.ForeignKey(
-        Product, blank=True,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='feedback')
+    product = models.ForeignKey(Product, blank=True,
+                                on_delete=models.SET_NULL,
+                                null=True,
+                                related_name='feedbacks')
 
     class Meta:
         verbose_name = _('Feedback')

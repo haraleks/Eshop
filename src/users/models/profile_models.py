@@ -39,7 +39,7 @@ class Customer(models.Model):
 
     @property
     def count_product_desired(self):
-        return self.desired_products.all().count()
+        return self.wish_lists.all().count()
 
     def __str__(self):
         return str(self.full_name)
