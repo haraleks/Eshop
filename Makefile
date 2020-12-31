@@ -27,11 +27,9 @@ clean:
 
 dev:
 	docker-compose -f docker-compose.yml up --build -d
-	docker image prune -a -f
 
 run:
-	docker-compose -f docker-compose.yml up --build
-	docker image prune -a -f
+	docker-compose -f docker-compose.yml up --build --remove-orphans
 
 migrate:
 	docker-compose exec web python manage.py makemigrations && \

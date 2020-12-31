@@ -7,3 +7,6 @@ src/staticfiles
 src/media
 */__pycache__/
 *.log
+*/__pycache__/
+*.pyc
+
