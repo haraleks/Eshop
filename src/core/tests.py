@@ -85,7 +85,7 @@ class InitClass(APITestCase, URLPatternsTestCase):
             quantity=2
         )
         position_product, _ = PositionProduct.objects.get_or_create(
-            product_items=product.product_items,
+            products_quantity=product.products_quantity,
             quantity=2,
             cart=cart
         )

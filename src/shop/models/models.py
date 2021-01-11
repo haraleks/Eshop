@@ -156,7 +156,7 @@ class ProductQuantity(models.Model):
     product = models.OneToOneField(Product, blank=True,
                                    on_delete=models.CASCADE,
                                    default=None,
-                                   related_name='product_items')
+                                   related_name='products_quantity')
     quantity = models.IntegerField(_('Quantity of products'),
                                    validators=[MinValueValidator(0)],
                                    default=0)
@@ -218,7 +218,7 @@ class Cart(models.Model):
     @property
     def total_order(self):
         total = self.position_products.annotate(
-            total_price=F('product_items__product__price') * F('quantity')).\
+            total_price=F('products_quantity__product__price') * F('quantity')).\
             aggregate(Sum('total_price'))
         return total['total_price__sum']
 
@@ -249,10 +249,10 @@ class Cart(models.Model):
 
 class PositionProduct(models.Model):
 
-    product_items = models.ForeignKey(ProductQuantity, blank=True,
-                                      on_delete=models.PROTECT,
-                                      null=True,
-                                      related_name='position_products')
+    products_quantity = models.ForeignKey(ProductQuantity, blank=True,
+                                          on_delete=models.PROTECT,
+                                          null=True,
+                                          related_name='position_products')
     quantity = models.IntegerField(_('Quantity of products'),
                                    validators=[MinValueValidator(0)], default=0)
     cart = models.ForeignKey(Cart, blank=True,
@@ -268,18 +268,18 @@ class PositionProduct(models.Model):
 
     @property
     def product_name(self):
-        return self.product_items.product.name
+        return self.products_quantity.product.name
 
     @property
     def product_price(self):
-        return self.product_items.product.price
+        return self.products_quantity.product.price
 
     @property
     def total_product_price(self):
-        return self.product_items.product.price * self.quantity
+        return self.products_quantity.product.price * self.quantity
 
     def __str__(self):
-        return f'{self.cart} : {self.product_items} | {self.quantity} ({self.cart.customer})'
+        return f'{self.cart} : {self.products_quantity} | {self.quantity} ({self.cart.customer})'
 
 
 class ProductsCompare(models.Model):
