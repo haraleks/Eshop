@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import include, path
+from faker import Faker
 from rest_framework.test import (APIClient, APITestCase,
                                  URLPatternsTestCase)
 from rest_framework_simplejwt.tokens import AccessToken
 
 from shop.models import Category, Subcategory, Product, Cart, ProductQuantity, PositionProduct
 from users.models.profile_models import Customer
-from faker import Faker
 
 SIMPLE_JWT = settings.SIMPLE_JWT
 

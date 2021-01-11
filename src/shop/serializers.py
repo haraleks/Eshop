@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from shop.models import Product, Value, Category, Subcategory, Feedback, ProductsCompare, WishList, \
-    PositionProduct, Cart
+from shop.models import (Product, Value, Category, Subcategory, Feedback,
+                         ProductsCompare, WishList, PositionProduct, Cart)
 from users.constants import Status
 
 
