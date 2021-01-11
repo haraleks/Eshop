@@ -13,8 +13,8 @@ as_view_with_pk = {
 }
 
 urlpatterns = [
-    path('customer/', CustomerRegistration.as_view(as_view_common), name='customer'),
-    path('customer/<int:pk>/', CustomerRegistration.as_view(as_view_with_pk), name='customer_id'),
+    path('customers/', CustomerRegistration.as_view(as_view_common), name='customer'),
+    path('customers/<int:pk>/', CustomerRegistration.as_view(as_view_with_pk), name='customer_id'),
     path('change_password/', ChangePasswordUser.as_view({'put': 'update'}), name='customer_pass'),
     path('deleted_customer/<int:pk>/', DeletedCustomer.as_view({'delete': 'destroy'}), name='del_customer'),
 ]
