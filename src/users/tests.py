@@ -8,7 +8,6 @@ class TestCustomerRegistration(InitClass):
     def setUp(self) -> None:
         self.user, self.customer, self.customer_client = self.create_customer()
         self.path_pk = reverse('customer_id', args=[self.customer.pk])
-        self.path_del = reverse('del_customer', args=[self.customer.pk])
         self.anon_client = self.anon_client()
         self.super_user, self.superuser_client = self.create_super_user()
 
@@ -55,12 +54,12 @@ class TestCustomerRegistration(InitClass):
 
     def test_delete(self):
         response = self.customer_client.delete(self.path_pk)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_delete_anonim(self):
-        response = self.anon_client.delete(self.path_del)
+        response = self.anon_client.delete(self.path_pk)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_super_user(self):
-        response = self.superuser_client.delete(self.path_del)
+        response = self.superuser_client.delete(self.path_pk)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
