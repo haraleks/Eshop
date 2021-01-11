@@ -158,13 +158,13 @@ class AddedProductInCartsSerializer(serializers.Serializer):
             cart = Cart.objects.create(status=Status.CREATED.value,
                                        customer=customer)
         product = Product.objects.get(pk=validated_data.pop('product'))
-        position_product = PositionProduct.objects.create(product_items=product.product_items,
+        position_product = PositionProduct.objects.create(products_quantity=product.products_quantity,
                                                           quantity=validated_data['quantity'],
                                                           cart=cart)
         return position_product
 
     def validate(self, attrs):
-        if attrs['product'].product_items.remains == 0:
+        if attrs['product'].products_quantity.remains == 0:
             raise serializers.ValidationError({"Product": "Product is over"})
         return super().validate(attrs)
 
