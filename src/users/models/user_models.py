@@ -1,4 +1,5 @@
-from django.contrib.auth.models import PermissionsMixin, BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import (PermissionsMixin, BaseUserManager, AbstractBaseUser)
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -42,13 +43,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    class Meta:
-        permissions = []
-        default_permissions = []
-        verbose_name = _('users')
-        verbose_name_plural = _('users')
-        abstract = True
-
     def clean(self):
         super().clean()
         self.email = self.__class__.objects.normalize_email(self.email)
@@ -57,13 +51,29 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
         self.is_active = False
         self.deleted_at = timezone.now()
         self.save()
+        if self.customer_profile.is_active:
+            self.customer_profile.delete()
 
     def __str__(self):
         return f'{self.email}'
 
+    class Meta:
+        permissions = []
+        default_permissions = []
+        verbose_name = _('users')
+        verbose_name_plural = _('users')
+        abstract = True
+
 
 class User(AbstractUser):
     objects = UserManager()
+
+    def is_customer(self):
+        try:
+            _ = self.customer_profile.first_name
+            return True
+        except ObjectDoesNotExist:
+            return False
 
     class Meta(AbstractUser.Meta):
         swappable = 'AUTH_USER_MODEL'

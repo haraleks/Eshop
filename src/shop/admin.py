@@ -6,9 +6,9 @@ from django.db.models import Count, F
 from django.http import HttpResponse
 
 from shop.models import (Category, Subcategory, Product,
-                         Attribute, Value, ProductItems,
-                         PromoCode, Basket, PositionProduct,
-                         ProductsCompare, DesiredProducts,
+                         Attribute, Value, ProductQuantity,
+                         PromoCodes, Cart, PositionProduct,
+                         ProductsCompare, WishList,
                          Feedback)
 
 
@@ -70,7 +70,7 @@ class ProductAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request)
         queryset = queryset.annotate(
             _category=F('subcategory__category__name'),
-            _main_character=F('main_character__value_model__value_char')
+            _main_character=F('main_characteristic__values__value_char')
         )
 
         return queryset
@@ -89,8 +89,7 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(Subcategory)
 admin.site.register(Attribute)
 admin.site.register(Value)
-admin.site.register(ProductItems)
-# admin.site.register(PromoCode)
+admin.site.register(ProductQuantity)
 
 
 def is_active_change(modeladmin, request, queryset):
@@ -105,8 +104,8 @@ def is_active_change(modeladmin, request, queryset):
 is_active_change.short_description = 'Activate and Deactivate promo code'
 
 
-@admin.register(PromoCode)
-class PromoCodeAdmin(admin.ModelAdmin):
+@admin.register(PromoCodes)
+class PromoCodesAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "code", "quantity", "discount", "remainder", "is_active")
     search_fields = ["code"]
     list_filter = ("created_at", "is_active")
@@ -115,7 +114,7 @@ class PromoCodeAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         queryset = queryset.annotate(
-            _count_used=Count('basket', distinct=True),
+            _count_used=Count('carts', distinct=True),
             _remainder=F('quantity') - F('_count_used')
         )
         return queryset
@@ -126,8 +125,8 @@ class PromoCodeAdmin(admin.ModelAdmin):
     remainder.admin_order_field = '_remainder'
 
 
-admin.site.register(Basket)
+admin.site.register(Cart)
 admin.site.register(PositionProduct)
 admin.site.register(ProductsCompare)
-admin.site.register(DesiredProducts)
+admin.site.register(WishList)
 admin.site.register(Feedback)

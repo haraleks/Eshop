@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import include, path
+from faker import Faker
 from rest_framework.test import (APIClient, APITestCase,
                                  URLPatternsTestCase)
 from rest_framework_simplejwt.tokens import AccessToken
 
-from shop.models import Category, Subcategory, Product, Basket, ProductItems, PositionProduct
+from shop.models import Category, Subcategory, Product, Cart, ProductQuantity, PositionProduct
 from users.models.profile_models import Customer
-from faker import Faker
 
 SIMPLE_JWT = settings.SIMPLE_JWT
 
@@ -75,18 +75,18 @@ class InitClass(APITestCase, URLPatternsTestCase):
         )
         return product
 
-    def added_basket(self, customer):
+    def added_carts(self, customer):
         product = self.create_product()
-        basket, _ = Basket.objects.get_or_create(
+        cart, _ = Cart.objects.get_or_create(
             customer=customer,
         )
-        ProductItems.objects.get_or_create(
+        ProductQuantity.objects.get_or_create(
             product=product,
             quantity=2
         )
         position_product, _ = PositionProduct.objects.get_or_create(
-            product_items=product.product_items,
+            products_quantity=product.products_quantity,
             quantity=2,
-            basket=basket
+            cart=cart
         )
-        return basket, position_product
+        return cart, position_product

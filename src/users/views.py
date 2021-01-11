@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
@@ -8,6 +9,8 @@ from users.models.profile_models import Customer
 from users.permissions import CRUDCustomerPermission
 from users.serializers import (CustomerSerializer, UpdateCustomerSerializer, ChangePasswordUserSerializer,
                                CustomerRegistrationSerializer)
+from django.core import mail
+
 
 User = get_user_model()
 
@@ -23,9 +26,16 @@ class CustomerRegistration(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = CustomerRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        model = serializer.create(serializer.data)
-        serializer = self.get_serializer(model)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        customer_model = serializer.create(serializer.data)
+        show_serializer = self.get_serializer(customer_model)
+        message = f"Customer: {customer_model.first_name}, " \
+                  f"login: {customer_model.user.email}, " \
+                  f"password: {serializer.data['password']}"
+        mail.send_mail(subject='Registered Account',
+                       message=message,
+                       from_email=settings.EMAIL_HOST_USER,
+                       recipient_list=[customer_model.user.email])
+        return Response(show_serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -56,9 +66,3 @@ class ChangePasswordUser(ModelViewSet):
             response = serializer.save()
 
         return Response(response)
-
-
-class DeletedCustomer(ModelViewSet):
-    serializer_class = CustomerSerializer
-    permission_classes = [permissions.IsAdminUser]
-    queryset = Customer.objects.all()

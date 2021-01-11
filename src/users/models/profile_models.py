@@ -10,7 +10,7 @@ User = get_user_model()
 
 class Customer(models.Model):
     user = models.OneToOneField(
-        User, related_name='client_profile', on_delete=models.CASCADE)
+        User, related_name='customer_profile', on_delete=models.CASCADE)
     first_name = models.CharField(_('First name'), max_length=155)
     last_name = models.CharField(_('Last name'), max_length=155, blank=True, default='')
     sex = models.CharField(
@@ -24,11 +24,6 @@ class Customer(models.Model):
     created_at = models.DateTimeField(_('Created'), auto_now_add=True)
     is_active = models.BooleanField(_('is_active'), default=True)
 
-    class Meta:
-        verbose_name = _('Customer')
-        verbose_name_plural = _('Customers')
-        default_permissions = []
-
     @property
     def full_name(self):
         return f'{self.first_name} {self.last_name}'
@@ -39,7 +34,7 @@ class Customer(models.Model):
 
     @property
     def count_product_desired(self):
-        return self.desired_products.all().count()
+        return self.wish_lists.all().count()
 
     def __str__(self):
         return str(self.full_name)
@@ -47,3 +42,9 @@ class Customer(models.Model):
     def delete(self, *args, **kwargs):
         self.is_active = False
         self.save()
+        self.user.delete()
+
+    class Meta:
+        verbose_name = _('Customer')
+        verbose_name_plural = _('Customers')
+        default_permissions = []
