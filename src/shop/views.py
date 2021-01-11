@@ -49,7 +49,7 @@ class ProductsCompareViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        queryset = queryset.filter(customer=request.user.client_profile)
+        queryset = queryset.filter(customer=request.user.customer_profile)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -66,7 +66,7 @@ class WishListViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         querysets = self.filter_queryset(self.get_queryset())
-        querysets = querysets.filter(customer=request.user.client_profile)
+        querysets = querysets.filter(customer=request.user.customer_profile)
         sub_list = []
         for queryset in querysets:
             sub_list.append(queryset.product.subcategory)
@@ -108,7 +108,7 @@ class CartsViewDelete(mixins.DestroyModelMixin,
     queryset = Cart.objects.all()
 
     def list(self, request, *args, **kwargs):
-        customer = request.user.client_profile
+        customer = request.user.customer_profile
         queryset = self.filter_queryset(self.get_queryset())
         queryset = queryset.filter(customer=customer, status=Status.CREATED.value)
 

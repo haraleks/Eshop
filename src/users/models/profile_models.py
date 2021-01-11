@@ -10,7 +10,7 @@ User = get_user_model()
 
 class Customer(models.Model):
     user = models.OneToOneField(
-        User, related_name='client_profile', on_delete=models.CASCADE)
+        User, related_name='customer_profile', on_delete=models.CASCADE)
     first_name = models.CharField(_('First name'), max_length=155)
     last_name = models.CharField(_('Last name'), max_length=155, blank=True, default='')
     sex = models.CharField(
@@ -42,6 +42,7 @@ class Customer(models.Model):
     def delete(self, *args, **kwargs):
         self.is_active = False
         self.save()
+        self.user.delete()
 
     class Meta:
         verbose_name = _('Customer')

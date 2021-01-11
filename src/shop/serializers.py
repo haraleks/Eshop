@@ -66,7 +66,7 @@ class ProductDetailSerializer(ProductSerializer):
                   'category', 'subcategory', 'characteristic', 'feedback', 'same_product']
 
     def get_same_product(self, instance):
-        customer = self.context['request'].user.client_profile
+        customer = self.context['request'].user.customer_profile
         product_random = Product.objects.random(sex=customer.sex,
                                                 subcategory=instance.subcategory,
                                                 exclud_id=instance.pk,
@@ -98,7 +98,7 @@ class ProductsCompareSerializer(serializers.ModelSerializer):
         fields = ['id', 'products']
 
     def create(self, validated_data):
-        customer = self.context['request'].user.client_profile
+        customer = self.context['request'].user.customer_profile
         product_compare = ProductsCompare.objects.create(**validated_data)
         product_compare.customer = customer
         product_compare.save()
@@ -106,7 +106,7 @@ class ProductsCompareSerializer(serializers.ModelSerializer):
         return product_compare
 
     def validate(self, attrs):
-        customer = self.context['request'].user.client_profile
+        customer = self.context['request'].user.customer_profile
         count_record = ProductsCompare.objects.filter(customer=customer).count()
         if count_record >= 5:
             raise serializers.ValidationError({"Records": ["Maximum of 5 entries"]})
@@ -120,14 +120,14 @@ class WishListSerializer(serializers.ModelSerializer):
         fields = ['id', 'product']
 
     def create(self, validated_data):
-        customer = self.context['request'].user.client_profile
+        customer = self.context['request'].user.customer_profile
         product = validated_data.pop('product')
         wish_list = WishList.objects.create(customer=customer,
                                             product=product)
         return wish_list
 
     def validate(self, attrs):
-        customer = self.context['request'].user.client_profile
+        customer = self.context['request'].user.customer_profile
         is_product = WishList.objects.filter(customer=customer, product=attrs['product']).exists()
         if is_product:
             raise serializers.ValidationError({'Product:': "You added this product in your wish list"})
@@ -151,7 +151,7 @@ class AddedProductInCartsSerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
 
     def create(self, validated_data):
-        customer = self.context['request'].user.client_profile
+        customer = self.context['request'].user.customer_profile
         cart = Cart.objects.filter(customer=customer,
                                    status=Status.CREATED.value).order_by('pk').last()
         if not cart:
