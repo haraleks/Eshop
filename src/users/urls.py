@@ -1,6 +1,6 @@
 from django.urls import path
 
-from users.views import CustomerRegistration, ChangePasswordUser, DeletedCustomer
+from users.views import (CustomerRegistration, ChangePasswordUser, DeletedCustomer)
 
 as_view_common = {
     'get': 'list',
