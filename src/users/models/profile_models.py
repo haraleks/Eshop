@@ -24,11 +24,6 @@ class Customer(models.Model):
     created_at = models.DateTimeField(_('Created'), auto_now_add=True)
     is_active = models.BooleanField(_('is_active'), default=True)
 
-    class Meta:
-        verbose_name = _('Customer')
-        verbose_name_plural = _('Customers')
-        default_permissions = []
-
     @property
     def full_name(self):
         return f'{self.first_name} {self.last_name}'
@@ -47,3 +42,8 @@ class Customer(models.Model):
     def delete(self, *args, **kwargs):
         self.is_active = False
         self.save()
+
+    class Meta:
+        verbose_name = _('Customer')
+        verbose_name_plural = _('Customers')
+        default_permissions = []
