@@ -42,13 +42,6 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    class Meta:
-        permissions = []
-        default_permissions = []
-        verbose_name = _('users')
-        verbose_name_plural = _('users')
-        abstract = True
-
     def clean(self):
         super().clean()
         self.email = self.__class__.objects.normalize_email(self.email)
@@ -60,6 +53,13 @@ class AbstractUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f'{self.email}'
+
+    class Meta:
+        permissions = []
+        default_permissions = []
+        verbose_name = _('users')
+        verbose_name_plural = _('users')
+        abstract = True
 
 
 class User(AbstractUser):

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Sum, F
@@ -13,19 +14,15 @@ class AbstractBaseNameModels(models.Model):
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(_('Date created'), auto_now_add=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         permissions = []
         abstract = True
 
-    def __str__(self):
-        return self.name
-
 
 class Category(AbstractBaseNameModels):
-    class Meta:
-        verbose_name = _('Category')
-        verbose_name_plural = _('Categories')
-        permissions = []
 
     @property
     def count_subcategory(self):
@@ -36,6 +33,11 @@ class Category(AbstractBaseNameModels):
         all_subcategory = self.subcategory.all()
         return Product.objects.filter(subcategory__in=all_subcategory).count()
 
+    class Meta:
+        verbose_name = _('Category')
+        verbose_name_plural = _('Categories')
+        permissions = []
+
 
 class Subcategory(AbstractBaseNameModels):
     category = models.ForeignKey(Category, blank=True,
@@ -43,17 +45,17 @@ class Subcategory(AbstractBaseNameModels):
                                  null=True,
                                  related_name='subcategory')
 
-    class Meta:
-        verbose_name = _('Subcategory')
-        verbose_name_plural = _('Subcategories')
-        permissions = []
-
     @property
     def count_product(self):
         return self.products.all().count()
 
     def __str__(self):
         return f'{self.category.name} - {self.name}'
+
+    class Meta:
+        verbose_name = _('Subcategory')
+        verbose_name_plural = _('Subcategories')
+        permissions = []
 
 
 class Product(AbstractBaseNameModels):
@@ -78,7 +80,6 @@ class Product(AbstractBaseNameModels):
     age_from = models.IntegerField(_('Age min'), blank=True, null=True)
     age_to = models.IntegerField(_('Age max'), blank=True, null=True)
     is_active = models.BooleanField(_("Is active"), default=True)
-    # TODO make m2m
     main_characteristic = models.ForeignKey('Attribute', blank=True,
                                             on_delete=models.CASCADE,
                                             null=True,
@@ -100,13 +101,13 @@ class Attribute(AbstractBaseNameModels):
                             max_length=8,
                             default=TypeValue.CHAR)
 
+    def __str__(self):
+        return f'{self.name} : {self.type}'
+
     class Meta:
         verbose_name = _('Attribute')
         verbose_name_plural = _('Attribute')
         permissions = []
-
-    def __str__(self):
-        return f'{self.name} : {self.type}'
 
 
 class Value(models.Model):
@@ -140,13 +141,13 @@ class Value(models.Model):
 
     value = property(_get_value, _set_value)
 
+    def __str__(self):
+        return f'{self.attribute.name} : {self.value}'
+
     class Meta:
         verbose_name = _('Value')
         verbose_name_plural = _('Value')
         permissions = []
-
-    def __str__(self):
-        return f'{self.attribute.name} : {self.value}'
 
 
 class ProductQuantity(models.Model):
@@ -165,20 +166,20 @@ class ProductQuantity(models.Model):
 
     @property
     def remains(self):
-        if self.quantity == 0:
-            return 0
+        if not self.quantity:
+            return self.quantity
         quantity_dct = self.position_products.aggregate(Sum('quantity'))
         if not quantity_dct['quantity__sum']:
             quantity_dct['quantity__sum'] = 0
         return self.quantity - quantity_dct['quantity__sum']
 
-    class Meta:
-        verbose_name = _('Product Items')
-        verbose_name_plural = _('Products Items')
-        permissions = []
-
     def __str__(self):
-        return f'{self.product.name} : {self.quantity}'
+        return f'{self.product.name} : {self.remains}'
+
+    class Meta:
+        verbose_name = _('Quantity of a product')
+        verbose_name_plural = _('Quantity of products')
+        permissions = []
 
 
 class PromoCodes(AbstractBaseNameModels):
@@ -189,16 +190,16 @@ class PromoCodes(AbstractBaseNameModels):
                                    validators=[MinValueValidator(1), MaxValueValidator(30)])
     is_active = models.BooleanField(_("Is active code"), default=True)
 
-    class Meta:
-        verbose_name = _('Promo code')
-        verbose_name_plural = _('Promo codes')
-        permissions = []
-
     @property
     def remainder(self):
         if self.quantity == 0:
             return 0
         return self.quantity - self.carts.all().count()
+
+    class Meta:
+        verbose_name = _('Promo code')
+        verbose_name_plural = _('Promo codes')
+        permissions = []
 
 
 class Cart(models.Model):
@@ -261,11 +262,6 @@ class PositionProduct(models.Model):
                              related_name='position_products')
     create_at = models.DateTimeField(_('Created'), auto_now_add=True)
 
-    class Meta:
-        verbose_name = _('Position product')
-        verbose_name_plural = _('Position products')
-        permissions = []
-
     @property
     def product_name(self):
         return self.products_quantity.product.name
@@ -280,6 +276,15 @@ class PositionProduct(models.Model):
 
     def __str__(self):
         return f'{self.cart} : {self.products_quantity} | {self.quantity} ({self.cart.customer})'
+
+    def clean(self):
+        if (self.products_quantity.remains - self.quantity) < 0:
+            raise ValidationError({"quantity": "Product run out of"})
+
+    class Meta:
+        verbose_name = _('Position product')
+        verbose_name_plural = _('Position products')
+        permissions = []
 
 
 class ProductsCompare(models.Model):
@@ -313,13 +318,13 @@ class WishList(models.Model):
                                 null=True,
                                 related_name='wish_lists')
 
+    def __str__(self):
+        return f'{self.product.name} - {self.customer.pk} {self.customer.user}'
+
     class Meta:
         verbose_name = _('Wish list')
         verbose_name_plural = _('Wish lists')
         permissions = []
-
-    def __str__(self):
-        return f'{self.product.name} - {self.customer.pk} {self.customer.user}'
 
 
 class Feedback(models.Model):

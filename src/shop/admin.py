@@ -70,7 +70,7 @@ class ProductAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request)
         queryset = queryset.annotate(
             _category=F('subcategory__category__name'),
-            _main_character=F('main_character__values__value_char')
+            _main_character=F('main_characteristic__values__value_char')
         )
 
         return queryset
