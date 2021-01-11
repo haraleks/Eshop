@@ -1,7 +1,7 @@
 from django_filters import rest_framework as rest_filters
-from rest_framework import permissions, filters, status
+from rest_framework import permissions, filters, status, mixins
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 from shop.models import (Product, Category, ProductsCompare, WishList, PositionProduct, Cart, Status)
 from shop.serializers import (ProductSerializer, CategorySerializer, ProductDetailSerializer,
@@ -10,7 +10,8 @@ from shop.serializers import (ProductSerializer, CategorySerializer, ProductDeta
                               SendPayCartsSerializer)
 
 
-class ProductViewSet(ModelViewSet):
+class ProductView(mixins.ListModelMixin,
+                  GenericViewSet):
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
     queryset = Product.objects.all()
@@ -30,7 +31,8 @@ class ProductViewSet(ModelViewSet):
         return context
 
 
-class CategoryViewSet(ModelViewSet):
+class CategoryiesView(mixins.ListModelMixin,
+                      GenericViewSet):
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
     queryset = Category.objects.all()
@@ -81,7 +83,9 @@ class WishListViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class PositionProductsViewSet(ModelViewSet):
+class PositionProductsCreateDelete(mixins.CreateModelMixin,
+                                   mixins.DestroyModelMixin,
+                                   GenericViewSet):
     serializer_class = AddedProductInCartsSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = PositionProduct.objects.all()
@@ -96,7 +100,9 @@ class PositionProductsViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class CartsViewSet(ModelViewSet):
+class CartsViewDelete(mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
+                      GenericViewSet):
     serializer_class = CartsSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = Cart.objects.all()
